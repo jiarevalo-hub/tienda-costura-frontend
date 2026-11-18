@@ -6,7 +6,7 @@ const NUMERO_WHATSAPP = '593997447443';
 const IMAGEN_POR_DEFECTO =
     'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80';
 
-export default function Catalogo() {
+export default function Catalogo({ esAdmin, alSeleccionarParaEditar }) {
     const [productos, setProductos] = useState([]);
     const [carrito, setCarrito] = useState([]);
     const [cargando, setCargando] = useState(true);
@@ -15,24 +15,56 @@ export default function Catalogo() {
     const [productoVistaPrevia, setProductoVistaPrevia] = useState(null);
     const [cantidadPrevia, setCantidadPrevia] = useState(1);
 
+    const obtenerProductos = async () => {
+        try {
+            const respuesta = await axios.get(API_URL);
+            setProductos(respuesta.data);
+        } catch (error) {
+            console.error('Error al cargar el catálogo:', error);
+        } finally {
+            setCargando(false);
+        }
+    };
+
     useEffect(() => {
-        const obtenerProductos = async () => {
-            try {
-                const respuesta = await axios.get(API_URL);
-                setProductos(respuesta.data);
-            } catch (error) {
-                console.error('Error al cargar el catálogo:', error);
-            } finally {
-                setCargando(false);
-            }
-        };
         obtenerProductos();
     }, []);
 
-    // Abrir modal de vista previa completa
-    const abrirVistaPrevia = (producto) => {
+    // Abrir modal de vista previa completa consultando GET /api/productos/:id
+    const abrirVistaPrevia = async (producto) => {
         setProductoVistaPrevia(producto);
         setCantidadPrevia(1);
+        try {
+            const res = await axios.get(`${API_URL}/${producto.id}`);
+            if (res.data) {
+                setProductoVistaPrevia(res.data);
+            }
+        } catch {
+            // Si falla la petición individual, conservamos el objeto del listado
+        }
+    };
+
+    // Eliminar un producto del catálogo (DELETE /api/productos/:id)
+    const eliminarProductoAdmin = async (id, nombre) => {
+        if (!window.confirm(`¿Estás seguro de eliminar "${nombre}" del catálogo?`)) {
+            return;
+        }
+        const token = localStorage.getItem('token');
+        try {
+            await axios.delete(`${API_URL}/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setProductos(productos.filter((p) => p.id !== id));
+            setCarrito(carrito.filter((item) => item.id !== id));
+            if (productoVistaPrevia?.id === id) {
+                setProductoVistaPrevia(null);
+            }
+        } catch (err) {
+            alert(
+                err.response?.data?.error ||
+                    'No se pudo eliminar el producto. Verifica tu sesión de administrador.'
+            );
+        }
     };
 
     // Agregar producto al carrito (soporta cantidad personalizada desde la vista previa)
@@ -56,11 +88,12 @@ export default function Catalogo() {
         setCarrito(carrito.filter((item) => item.id !== id));
     };
 
-    // Calcular el precio total
+    // Calcular el precio total y cantidad total de artículos
     const totalPrecio = carrito.reduce(
         (suma, item) => suma + Number(item.precio) * item.cantidad,
         0
     );
+    const totalArticulos = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
     // Enviar pedido del carrito por WhatsApp
     const enviarPorWhatsApp = () => {
@@ -135,13 +168,13 @@ export default function Catalogo() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-8 font-sans">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 font-sans">
             {/* Encabezado de sección */}
-            <div className="text-center mb-10">
+            <div className="text-center mb-8 sm:mb-10">
                 <span className="text-xs uppercase tracking-[0.25em] text-[#b38f48] font-semibold">
                     Tienda &amp; Catálogo
                 </span>
-                <h2 className="text-3xl font-light text-gray-800 mt-2 tracking-wide">
+                <h2 className="text-2xl sm:text-3xl font-light text-gray-800 mt-2 tracking-wide">
                     Nuestros Productos y Servicios
                 </h2>
                 <div className="w-16 h-0.5 bg-[#c8a45d] mx-auto mt-4" />
@@ -219,7 +252,7 @@ export default function Catalogo() {
                                     key={producto.id}
                                     className="bg-white rounded-sm shadow-2xs hover:shadow-md transition overflow-hidden border border-gray-200 flex flex-col group"
                                 >
-                                    {/* Contenedor de imagen completa (object-contain para que se vea todo el producto sin recortar) */}
+                                    {/* Contenedor de imagen completa */}
                                     <div
                                         onClick={() => abrirVistaPrevia(producto)}
                                         className="relative overflow-hidden h-64 bg-[#f9f8f6] p-3 flex items-center justify-center cursor-pointer border-b border-gray-100"
@@ -229,7 +262,6 @@ export default function Catalogo() {
                                             alt={producto.nombre}
                                             className="max-w-full max-h-full object-contain group-hover:scale-105 transition duration-500"
                                         />
-                                        {/* Botón superpuesto al pasar el mouse */}
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-end justify-center p-3">
                                             <span className="opacity-0 group-hover:opacity-100 transition bg-white/95 text-gray-800 text-[11px] uppercase tracking-[0.15em] font-medium px-3.5 py-1.5 rounded-xs shadow-sm">
                                                 👁️ Vista previa completa
@@ -260,25 +292,60 @@ export default function Catalogo() {
                                                 {producto.descripcion}
                                             </p>
                                         </div>
-                                        <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
-                                            <span className="text-lg font-semibold text-gray-900">
-                                                ${Number(producto.precio).toFixed(2)}
-                                            </span>
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => abrirVistaPrevia(producto)}
-                                                    className="border border-gray-300 hover:border-[#c8a45d] text-gray-700 hover:text-[#a37f38] px-3 py-2 rounded-xs transition text-xs uppercase tracking-wider cursor-pointer"
-                                                    title="Ver vista previa completa"
-                                                >
-                                                    Vista Previa
-                                                </button>
-                                                <button
-                                                    onClick={() => agregarAlCarrito(producto, 1)}
-                                                    className="bg-[#c8a45d] hover:bg-[#b59049] text-white px-4 py-2 rounded-xs transition text-xs uppercase tracking-[0.14em] font-medium cursor-pointer"
-                                                >
-                                                    Agregar
-                                                </button>
+
+                                        <div className="mt-6 pt-4 border-t border-gray-100">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-lg font-semibold text-gray-900">
+                                                    ${Number(producto.precio).toFixed(2)}
+                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => abrirVistaPrevia(producto)}
+                                                        className="border border-gray-300 hover:border-[#c8a45d] text-gray-700 hover:text-[#a37f38] px-3 py-2 rounded-xs transition text-xs uppercase tracking-wider cursor-pointer"
+                                                        title="Ver vista previa completa"
+                                                    >
+                                                        Vista Previa
+                                                    </button>
+                                                    <button
+                                                        onClick={() => agregarAlCarrito(producto, 1)}
+                                                        className="bg-[#c8a45d] hover:bg-[#b59049] text-white px-4 py-2 rounded-xs transition text-xs uppercase tracking-[0.14em] font-medium cursor-pointer"
+                                                    >
+                                                        Agregar
+                                                    </button>
+                                                </div>
                                             </div>
+
+                                            {/* Acciones exclusivas de Administrador (PUT y DELETE) */}
+                                            {esAdmin && (
+                                                <div className="mt-3 pt-3 border-t border-dashed border-gray-200 flex items-center justify-end gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (alSeleccionarParaEditar) {
+                                                                alSeleccionarParaEditar(producto);
+                                                            }
+                                                            document
+                                                                .getElementById('form-admin-producto')
+                                                                ?.scrollIntoView({ behavior: 'smooth' });
+                                                        }}
+                                                        className="text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-xs bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 cursor-pointer"
+                                                    >
+                                                        ✏️ Editar
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            eliminarProductoAdmin(
+                                                                producto.id,
+                                                                producto.nombre
+                                                            )
+                                                        }
+                                                        className="text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-xs bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 cursor-pointer"
+                                                    >
+                                                        🗑️ Eliminar
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -288,7 +355,10 @@ export default function Catalogo() {
                 </div>
 
                 {/* Carrito de Compras (Ocupa la columna derecha) */}
-                <div className="bg-[#faf9f6] p-6 rounded-sm shadow-2xs border border-gray-200 h-fit sticky top-24">
+                <div
+                    id="seccion-carrito"
+                    className="bg-[#faf9f6] p-5 sm:p-6 rounded-sm shadow-2xs border border-gray-200 h-fit sticky top-24"
+                >
                     <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-800 mb-4 border-b border-gray-200 pb-3">
                         🛒 Tu Carrito de Pedidos
                     </h3>
@@ -350,17 +420,41 @@ export default function Catalogo() {
                 </div>
             </div>
 
+            {/* Barra flotante inferior de Carrito para Celular */}
+            {carrito.length > 0 && (
+                <div className="lg:hidden fixed bottom-4 left-4 right-20 z-40 bg-[#1c1b18] text-white px-4 py-3 rounded-sm shadow-xl flex items-center justify-between gap-2 border border-[#c8a45d]/50">
+                    <div className="min-w-0">
+                        <p className="text-[11px] text-[#c8a45d] uppercase tracking-wider font-semibold">
+                            🛒 {totalArticulos} {totalArticulos === 1 ? 'artículo' : 'artículos'}
+                        </p>
+                        <p className="text-sm font-bold truncate">
+                            Total: ${totalPrecio.toFixed(2)}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() =>
+                            document
+                                .getElementById('seccion-carrito')
+                                ?.scrollIntoView({ behavior: 'smooth' })
+                        }
+                        className="bg-[#c8a45d] text-white px-3.5 py-2 rounded-xs text-[11px] uppercase tracking-wider font-semibold shrink-0"
+                    >
+                        Ver Pedido
+                    </button>
+                </div>
+            )}
+
             {/* MODAL DE VISTA PREVIA COMPLETA DEL PRODUCTO */}
             {productoVistaPrevia && (
                 <div
                     onClick={() => setProductoVistaPrevia(null)}
-                    className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+                    className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
                 >
                     <div
                         onClick={(e) => e.stopPropagation()}
-                        className="bg-white rounded-sm shadow-2xl border border-gray-200 max-w-4xl w-full overflow-hidden relative grid grid-cols-1 md:grid-cols-2 my-8"
+                        className="bg-white rounded-sm shadow-2xl border border-gray-200 max-w-4xl w-full max-h-[92vh] overflow-y-auto relative grid grid-cols-1 md:grid-cols-2 my-auto"
                     >
-                        {/* Botón Cerrar */}
                         <button
                             onClick={() => setProductoVistaPrevia(null)}
                             className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-gray-100 text-gray-600 hover:text-gray-900 shadow-xs flex items-center justify-center text-base cursor-pointer"
@@ -393,9 +487,14 @@ export default function Catalogo() {
                         {/* Columna Derecha: Toda la información y acciones del producto */}
                         <div className="p-6 sm:p-8 flex flex-col justify-between">
                             <div>
-                                <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a37f38] bg-[#f9f5ec] px-3 py-1 rounded-xs">
-                                    {productoVistaPrevia.categoria || 'Catálogo'}
-                                </span>
+                                <div className="flex items-center justify-between pr-8">
+                                    <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a37f38] bg-[#f9f5ec] px-3 py-1 rounded-xs">
+                                        {productoVistaPrevia.categoria || 'Catálogo'}
+                                    </span>
+                                    <span className="text-[11px] text-gray-400">
+                                        ID #{productoVistaPrevia.id}
+                                    </span>
+                                </div>
 
                                 <h2 className="text-2xl sm:text-3xl font-light text-gray-900 mt-3">
                                     {productoVistaPrevia.nombre}
@@ -415,7 +514,6 @@ export default function Catalogo() {
                                         'Servicio o producto de alta calidad confeccionado y revisado en nuestro Taller de Costura.'}
                                 </p>
 
-                                {/* Detalles adicionales del taller */}
                                 <div className="mt-6 bg-[#faf9f6] border border-gray-200 rounded-xs p-3.5 text-xs text-gray-600 space-y-1.5">
                                     <p>✓ Atención y ajuste personalizado en nuestro taller.</p>
                                     <p>✓ Materiales e hilos de alta calidad y durabilidad.</p>

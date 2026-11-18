@@ -1,5 +1,6 @@
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -7,4 +8,6 @@ body {
   font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   color: #1f2937;
   background-color: #faf9f6;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
