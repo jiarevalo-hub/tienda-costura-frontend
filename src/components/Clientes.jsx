@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { notificar, confirmarAccion } from './Notificaciones';
 
 const API_CLIENTES_URL = 'https://tienda-costura-backend.onrender.com/api/clientes';
 const API_USUARIOS_URL = 'https://tienda-costura-backend.onrender.com/api/auth/usuarios';
@@ -42,7 +43,10 @@ export default function Clientes() {
             const respuesta = await axios.get(`${API_CLIENTES_URL}/${idBusquedaCliente.trim()}`);
             setClientes(respuesta.data ? [respuesta.data] : []);
         } catch (error) {
-            alert(error.response?.data?.error || 'Cliente no encontrado con ese ID.');
+            notificar(
+                error.response?.data?.error || 'Cliente no encontrado con ese ID.',
+                'aviso'
+            );
         }
     };
 
@@ -53,14 +57,16 @@ export default function Clientes() {
             if (clienteEditandoId) {
                 await axios.put(`${API_CLIENTES_URL}/${clienteEditandoId}`, formData);
                 setClienteEditandoId(null);
+                notificar('Datos del cliente actualizados correctamente.');
             } else {
                 await axios.post(API_CLIENTES_URL, formData);
+                notificar('Nuevo cliente registrado con éxito.');
             }
             setFormData({ nombre: '', telefono: '', correo: '' });
             obtenerClientes();
         } catch (error) {
             console.error('Error al guardar cliente:', error);
-            alert('No se pudo guardar el cliente.');
+            notificar('No se pudo guardar el cliente.', 'error');
         }
     };
 
@@ -76,13 +82,20 @@ export default function Clientes() {
 
     // DELETE /api/clientes/:id
     const eliminarCliente = async (id, nombre) => {
-        if (!window.confirm(`¿Deseas eliminar al cliente "${nombre}"?`)) return;
+        const confirmado = await confirmarAccion({
+            titulo: 'Eliminar cliente',
+            mensaje: `¿Deseas eliminar al cliente "${nombre}" del registro?`,
+            textoConfirmar: 'Sí, eliminar',
+            peligro: true,
+        });
+        if (!confirmado) return;
         try {
             await axios.delete(`${API_CLIENTES_URL}/${id}`);
             setClientes(clientes.filter((c) => c.id !== id));
+            notificar(`Cliente "${nombre}" eliminado.`);
         } catch (error) {
             console.error('Error al eliminar cliente:', error);
-            alert('No se pudo eliminar el cliente.');
+            notificar('No se pudo eliminar el cliente.', 'error');
         }
     };
 
@@ -109,7 +122,10 @@ export default function Clientes() {
             const respuesta = await axios.get(`${API_USUARIOS_URL}/${idBusquedaUsuario.trim()}`);
             setUsuarios(respuesta.data ? [respuesta.data] : []);
         } catch (error) {
-            alert(error.response?.data?.error || 'Usuario no encontrado con ese ID.');
+            notificar(
+                error.response?.data?.error || 'Usuario no encontrado con ese ID.',
+                'aviso'
+            );
         }
     };
 
@@ -122,21 +138,29 @@ export default function Clientes() {
             setUsuarioEditandoId(null);
             setFormUsuario({ nombre: '', correo: '', rol: 'cliente' });
             obtenerUsuarios();
+            notificar('Usuario actualizado correctamente.');
         } catch (error) {
             console.error('Error al actualizar usuario:', error);
-            alert('No se pudo actualizar el usuario.');
+            notificar('No se pudo actualizar el usuario.', 'error');
         }
     };
 
     // DELETE /api/auth/usuarios/:id
     const eliminarUsuario = async (id, nombre) => {
-        if (!window.confirm(`¿Deseas eliminar la cuenta de usuario "${nombre}"?`)) return;
+        const confirmado = await confirmarAccion({
+            titulo: 'Eliminar cuenta de usuario',
+            mensaje: `¿Deseas eliminar la cuenta de usuario "${nombre}"?`,
+            textoConfirmar: 'Sí, eliminar',
+            peligro: true,
+        });
+        if (!confirmado) return;
         try {
             await axios.delete(`${API_USUARIOS_URL}/${id}`);
             setUsuarios(usuarios.filter((u) => u.id !== id));
+            notificar(`Usuario "${nombre}" eliminado.`);
         } catch (error) {
             console.error('Error al eliminar usuario:', error);
-            alert('No se pudo eliminar el usuario.');
+            notificar('No se pudo eliminar el usuario.', 'error');
         }
     };
 

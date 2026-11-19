@@ -1,5 +1,6 @@
 import React from 'react';
 import { convertirArchivoABase64 } from '../configSitio';
+import { notificar } from './Notificaciones';
 
 export default function SobreNosotros({
   irAVista,
@@ -31,17 +32,18 @@ export default function SobreNosotros({
     try {
       const base64 = await convertirArchivoABase64(archivo, 1000);
       cambiarCampo('imagen', base64);
+      notificar('Fotografía del taller actualizada.');
     } catch (err) {
-      alert(err.message);
+      notificar(err.message, 'error');
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 animate-fade-up">
       {/* Encabezado */}
-      <div className="text-center mb-14">
+      <div className="text-center mb-12 sm:mb-16">
         {modoEdicion ? (
-          <div className="max-w-md mx-auto space-y-2 bg-amber-50/60 border border-amber-300 p-4 rounded-sm">
+          <div className="max-w-md mx-auto space-y-2 bg-amber-50/60 border border-amber-300 p-4 rounded-md">
             <input
               type="text"
               value={datos.etiqueta}
@@ -57,26 +59,32 @@ export default function SobreNosotros({
           </div>
         ) : (
           <>
-            <span className="text-xs uppercase tracking-[0.25em] text-[#b38f48] font-semibold">
+            <span className="text-[11px] uppercase tracking-[0.28em] text-[#b38f48] font-semibold">
               {datos.etiqueta}
             </span>
-            <h1 className="text-3xl sm:text-4xl font-light text-gray-800 mt-2 tracking-wide">
+            <h1 className="font-editorial text-4xl sm:text-5xl font-semibold text-gray-900 mt-1.5 tracking-wide">
               {datos.titulo}
             </h1>
-            <div className="w-16 h-0.5 bg-[#c8a45d] mx-auto mt-4" />
+            <div className="flex items-center justify-center gap-3 mt-3">
+              <span className="w-12 h-[1px] bg-[#c8a45d]" />
+              <span className="text-[#c8a45d] text-xs">◆</span>
+              <span className="w-12 h-[1px] bg-[#c8a45d]" />
+            </div>
           </>
         )}
       </div>
 
-      {/* Bloque principal con imagen e historia */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center bg-white p-8 sm:p-12 rounded-sm border border-gray-200 shadow-2xs mb-12">
+      {/* Bloque principal con imagen enmarcada e historia */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center bg-white p-6 sm:p-12 rounded-md border border-[#e6dec8] shadow-sm mb-12">
         <div>
-          <div className="overflow-hidden rounded-xs h-80 sm:h-96 bg-gray-100">
-            <img
-              src={datos.imagen}
-              alt="Taller de Costura"
-              className="w-full h-full object-cover"
-            />
+          <div className="relative p-2 bg-[#faf6ed] border border-[#e4d5b7] rounded-md shadow-xs">
+            <div className="overflow-hidden rounded-sm h-72 sm:h-96 bg-gray-100">
+              <img
+                src={datos.imagen}
+                alt="Taller de Costura"
+                className="w-full h-full object-cover hover:scale-105 transition duration-700"
+              />
+            </div>
           </div>
           {modoEdicion && (
             <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xs space-y-2 text-xs">
@@ -132,24 +140,27 @@ export default function SobreNosotros({
             </div>
           ) : (
             <>
-              <span className="text-xs uppercase tracking-[0.2em] text-[#b38f48] font-semibold">
+              <span className="text-[11px] uppercase tracking-[0.25em] text-[#b38f48] font-semibold">
                 {datos.subtituloHistoria}
               </span>
-              <h2 className="text-2xl font-light text-gray-800 mt-2 mb-4">
+              <h2 className="font-editorial text-3xl sm:text-4xl font-semibold text-gray-900 mt-1.5 mb-4 leading-snug">
                 {datos.tituloHistoria}
               </h2>
-              <p className="text-gray-600 text-sm leading-relaxed mb-4">
+              <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
                 {datos.parrafo1}
               </p>
-              <p className="text-gray-600 text-sm leading-relaxed mb-6">
+              <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-6">
                 {datos.parrafo2}
               </p>
             </>
           )}
 
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100 text-center mt-4">
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-6 border-t border-[#efe8da] text-center mt-4">
             {datos.estadisticas.map((est, idx) => (
-              <div key={idx}>
+              <div
+                key={idx}
+                className="bg-[#faf8f3] border border-[#ebe2cf] rounded-sm p-3"
+              >
                 {modoEdicion ? (
                   <div className="space-y-1">
                     <input
@@ -171,10 +182,10 @@ export default function SobreNosotros({
                   </div>
                 ) : (
                   <>
-                    <span className="block text-2xl font-semibold text-[#c8a45d]">
+                    <span className="block font-editorial text-2xl sm:text-3xl font-bold text-[#b89146]">
                       {est.valor}
                     </span>
-                    <span className="text-[11px] uppercase tracking-wider text-gray-500">
+                    <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-gray-500 font-medium">
                       {est.etiqueta}
                     </span>
                   </>
@@ -186,12 +197,12 @@ export default function SobreNosotros({
       </div>
 
       {/* Valores */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-12">
         {datos.valores.map((val, idx) => (
           <div
             key={idx}
-            className={`bg-white p-6 rounded-sm border text-center ${
-              modoEdicion ? 'border-amber-400' : 'border-gray-200'
+            className={`card-atelier p-7 text-center ${
+              modoEdicion ? 'border-amber-400' : ''
             }`}
           >
             {modoEdicion ? (
@@ -213,10 +224,10 @@ export default function SobreNosotros({
               </div>
             ) : (
               <>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-800 mb-2">
+                <h3 className="font-editorial text-xl font-semibold text-gray-900 mb-2">
                   {val.titulo}
                 </h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   {val.descripcion}
                 </p>
               </>
@@ -228,7 +239,7 @@ export default function SobreNosotros({
       <div className="text-center">
         <button
           onClick={() => irAVista('contacto')}
-          className="bg-[#c8a45d] hover:bg-[#b59049] text-white text-xs uppercase tracking-[0.18em] px-8 py-3.5 rounded-xs transition cursor-pointer"
+          className="w-full sm:w-auto btn-gold text-xs uppercase tracking-[0.2em] font-semibold px-9 py-4 rounded-sm cursor-pointer"
         >
           Contáctanos
         </button>

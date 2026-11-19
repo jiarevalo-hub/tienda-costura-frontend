@@ -53,11 +53,11 @@ export default function Contacto({
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 animate-fade-up">
       {/* Encabezado */}
-      <div className="text-center mb-14">
+      <div className="text-center mb-12 sm:mb-16">
         {modoEdicion ? (
-          <div className="max-w-xl mx-auto space-y-2 bg-amber-50/60 border border-amber-300 p-4 rounded-sm">
+          <div className="max-w-xl mx-auto space-y-2 bg-amber-50/60 border border-amber-300 p-4 rounded-md">
             <input
               type="text"
               value={datos.etiqueta}
@@ -79,25 +79,29 @@ export default function Contacto({
           </div>
         ) : (
           <>
-            <span className="text-xs uppercase tracking-[0.25em] text-[#b38f48] font-semibold">
+            <span className="text-[11px] uppercase tracking-[0.28em] text-[#b38f48] font-semibold">
               {datos.etiqueta}
             </span>
-            <h1 className="text-3xl sm:text-4xl font-light text-gray-800 mt-2 tracking-wide">
+            <h1 className="font-editorial text-4xl sm:text-5xl font-semibold text-gray-900 mt-1.5 tracking-wide">
               {datos.titulo}
             </h1>
-            <div className="w-16 h-0.5 bg-[#c8a45d] mx-auto mt-4 mb-4" />
-            <p className="text-gray-600 max-w-xl mx-auto text-sm sm:text-base">
+            <div className="flex items-center justify-center gap-3 mt-3 mb-4">
+              <span className="w-12 h-[1px] bg-[#c8a45d]" />
+              <span className="text-[#c8a45d] text-xs">◆</span>
+              <span className="w-12 h-[1px] bg-[#c8a45d]" />
+            </div>
+            <p className="text-gray-600 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
               {datos.subtitulo}
             </p>
           </>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 mb-12">
         {/* Información de contacto */}
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-sm border border-gray-200 shadow-2xs flex items-start gap-4">
-            <div className="w-11 h-11 rounded-full bg-[#f9f5ec] text-[#c8a45d] flex items-center justify-center text-xl shrink-0">
+        <div className="space-y-5">
+          <div className="card-atelier p-6 flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full bg-[#faf6ed] border border-[#e6d8bc] text-[#c8a45d] flex items-center justify-center text-xl shrink-0">
               📍
             </div>
             <div className="flex-1">
@@ -200,8 +204,8 @@ export default function Contacto({
         </div>
 
         {/* Formulario de Contacto */}
-        <div className="bg-white p-8 rounded-sm border border-gray-200 shadow-2xs">
-          <h2 className="text-xl font-light text-gray-800 mb-6 tracking-wide">
+        <div className="card-atelier p-6 sm:p-9">
+          <h2 className="font-editorial text-2xl sm:text-3xl font-semibold text-gray-900 mb-6">
             Envíanos un Mensaje
           </h2>
 
@@ -279,7 +283,7 @@ export default function Contacto({
             <button
               type="submit"
               disabled={enviando}
-              className="w-full bg-[#c8a45d] hover:bg-[#b59049] text-white py-3 rounded-xs transition text-xs uppercase tracking-[0.18em] font-medium cursor-pointer"
+              className="w-full btn-gold py-3.5 rounded-sm text-xs uppercase tracking-[0.18em] font-semibold cursor-pointer"
             >
               {enviando ? 'Enviando...' : 'Enviar Consulta'}
             </button>
@@ -288,13 +292,13 @@ export default function Contacto({
       </div>
 
       {/* Mapa interactivo de Google Maps */}
-      <div className="bg-white p-4 sm:p-6 rounded-sm border border-gray-200 shadow-2xs">
+      <div className="card-atelier p-5 sm:p-7">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
             <span className="text-[11px] uppercase tracking-[0.2em] text-[#b38f48] font-semibold">
               Ubicación en Google Maps
             </span>
-            <h2 className="text-xl font-light text-gray-800">
+            <h2 className="font-editorial text-2xl sm:text-3xl font-semibold text-gray-900">
               Encuéntranos fácilmente
             </h2>
           </div>

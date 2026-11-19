@@ -53,11 +53,11 @@ export default function Servicios({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14 animate-fade-up">
       {/* Encabezado */}
-      <div className="text-center mb-14">
+      <div className="text-center mb-12 sm:mb-16">
         {modoEdicion ? (
-          <div className="max-w-xl mx-auto space-y-3 bg-amber-50/60 border border-amber-300 p-5 rounded-sm">
+          <div className="max-w-xl mx-auto space-y-3 bg-amber-50/60 border border-amber-300 p-5 rounded-md">
             <span className="text-[11px] uppercase tracking-widest text-amber-800 font-semibold block">
               ✏️ Editando Encabezado de Servicios
             </span>
@@ -82,14 +82,18 @@ export default function Servicios({
           </div>
         ) : (
           <>
-            <span className="text-xs uppercase tracking-[0.25em] text-[#b38f48] font-semibold">
+            <span className="text-[11px] uppercase tracking-[0.28em] text-[#b38f48] font-semibold">
               {datos.etiqueta}
             </span>
-            <h1 className="text-3xl sm:text-4xl font-light text-gray-800 mt-2 tracking-wide">
+            <h1 className="font-editorial text-4xl sm:text-5xl font-semibold text-gray-900 mt-1.5 tracking-wide">
               {datos.titulo}
             </h1>
-            <div className="w-16 h-0.5 bg-[#c8a45d] mx-auto mt-4 mb-4" />
-            <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base">
+            <div className="flex items-center justify-center gap-3 mt-3 mb-4">
+              <span className="w-12 h-[1px] bg-[#c8a45d]" />
+              <span className="text-[#c8a45d] text-xs">◆</span>
+              <span className="w-12 h-[1px] bg-[#c8a45d]" />
+            </div>
+            <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
               {datos.subtitulo}
             </p>
           </>
@@ -102,7 +106,7 @@ export default function Servicios({
           <button
             type="button"
             onClick={agregarNuevoServicio}
-            className="bg-[#c8a45d] hover:bg-[#b59049] text-white px-5 py-2.5 rounded-xs text-xs uppercase tracking-widest font-semibold cursor-pointer shadow-xs"
+            className="btn-gold px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest font-semibold cursor-pointer"
           >
             ➕ Agregar Nueva Tarjeta de Servicio
           </button>
@@ -110,14 +114,16 @@ export default function Servicios({
       )}
 
       {/* Cuadrícula de servicios */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16">
         {datos.lista.map((srv, idx) => (
           <div
             key={idx}
-            className={`bg-white p-8 rounded-sm border shadow-2xs flex flex-col justify-between transition ${
-              modoEdicion ? 'border-amber-400' : 'border-gray-200 hover:shadow-md'
+            className={`card-atelier relative p-7 sm:p-8 flex flex-col justify-between group overflow-hidden ${
+              modoEdicion ? 'border-amber-400' : ''
             }`}
           >
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c8a45d] to-transparent opacity-60 group-hover:opacity-100 transition" />
+
             {modoEdicion ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -186,10 +192,10 @@ export default function Servicios({
             ) : (
               <>
                 <div>
-                  <div className="w-12 h-12 mb-5 rounded-full bg-[#f9f5ec] text-[#c8a45d] flex items-center justify-center text-2xl">
+                  <div className="w-14 h-14 mb-5 rounded-full bg-[#faf6ed] border border-[#e6d8bc] text-[#c8a45d] flex items-center justify-center text-2xl group-hover:scale-110 group-hover:bg-[#c8a45d] group-hover:text-white transition duration-300">
                     {srv.icono}
                   </div>
-                  <h3 className="text-lg font-medium text-gray-800 uppercase tracking-wide mb-2">
+                  <h3 className="font-editorial text-2xl font-semibold text-gray-900 mb-2.5">
                     {srv.titulo}
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed mb-6">
@@ -197,13 +203,13 @@ export default function Servicios({
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#a37f38]">
+                <div className="pt-4 border-t border-[#efe8da] flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#9c7832] bg-[#faf6ed] border border-[#e9dec6] px-3 py-1 rounded-full">
                     {srv.precioRef}
                   </span>
                   <button
                     onClick={() => consultarServicio(srv.titulo)}
-                    className="text-xs uppercase tracking-[0.14em] bg-[#c8a45d] hover:bg-[#b59049] text-white px-4 py-2 rounded-xs transition font-medium cursor-pointer"
+                    className="btn-gold text-xs uppercase tracking-[0.14em] px-4 py-2 rounded-sm font-semibold cursor-pointer"
                   >
                     Cotizar
                   </button>
@@ -214,69 +220,71 @@ export default function Servicios({
         ))}
       </div>
 
-      {/* Proceso de trabajo */}
-      <div className="bg-white border border-[#e8dfd1] rounded-sm p-8 sm:p-12 text-center">
-        <span className="text-xs uppercase tracking-[0.25em] text-[#b38f48] font-semibold">
-          Paso a Paso
-        </span>
-        {modoEdicion ? (
-          <input
-            type="text"
-            value={datos.pasosTitulo}
-            onChange={(e) => cambiarCampo('pasosTitulo', e.target.value)}
-            className="block mx-auto mt-2 mb-8 p-2 border border-amber-300 rounded-xs text-xl text-center w-full max-w-md"
-          />
-        ) : (
-          <h2 className="text-2xl font-light text-gray-800 mt-2 mb-8">
-            {datos.pasosTitulo}
-          </h2>
-        )}
+      {/* Proceso de trabajo con borde tipo costura */}
+      <div className="bg-white border border-[#e2d6be] rounded-md p-6 sm:p-12 text-center shadow-sm relative">
+        <div className="stitch-border rounded-sm p-6 sm:p-10">
+          <span className="text-[11px] uppercase tracking-[0.28em] text-[#b38f48] font-semibold">
+            Paso a Paso
+          </span>
+          {modoEdicion ? (
+            <input
+              type="text"
+              value={datos.pasosTitulo}
+              onChange={(e) => cambiarCampo('pasosTitulo', e.target.value)}
+              className="block mx-auto mt-2 mb-8 p-2 border border-amber-300 rounded-xs text-xl text-center w-full max-w-md"
+            />
+          ) : (
+            <h2 className="font-editorial text-3xl sm:text-4xl font-semibold text-gray-900 mt-1 mb-10">
+              {datos.pasosTitulo}
+            </h2>
+          )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-          {datos.pasos.map((paso, idx) => (
-            <div key={idx}>
-              <div className="w-10 h-10 rounded-full bg-[#c8a45d] text-white font-semibold flex items-center justify-center mx-auto mb-3">
-                {idx + 1}
-              </div>
-              {modoEdicion ? (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={paso.titulo}
-                    onChange={(e) =>
-                      cambiarPaso(idx, 'titulo', e.target.value)
-                    }
-                    className="w-full p-2 border border-amber-300 rounded-xs text-xs text-center font-semibold"
-                  />
-                  <textarea
-                    rows={2}
-                    value={paso.descripcion}
-                    onChange={(e) =>
-                      cambiarPaso(idx, 'descripcion', e.target.value)
-                    }
-                    className="w-full p-2 border border-amber-300 rounded-xs text-xs text-center"
-                  />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+            {datos.pasos.map((paso, idx) => (
+              <div key={idx} className="relative">
+                <div className="w-12 h-12 rounded-full btn-gold font-editorial text-xl font-bold flex items-center justify-center mx-auto mb-4">
+                  {idx + 1}
                 </div>
-              ) : (
-                <>
-                  <h4 className="font-medium text-gray-800 uppercase text-sm tracking-wider mb-1">
-                    {paso.titulo}
-                  </h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    {paso.descripcion}
-                  </p>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
+                {modoEdicion ? (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={paso.titulo}
+                      onChange={(e) =>
+                        cambiarPaso(idx, 'titulo', e.target.value)
+                      }
+                      className="w-full p-2 border border-amber-300 rounded-xs text-xs text-center font-semibold"
+                    />
+                    <textarea
+                      rows={2}
+                      value={paso.descripcion}
+                      onChange={(e) =>
+                        cambiarPaso(idx, 'descripcion', e.target.value)
+                      }
+                      className="w-full p-2 border border-amber-300 rounded-xs text-xs text-center"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <h4 className="font-editorial text-xl font-semibold text-gray-900 mb-1.5">
+                      {paso.titulo}
+                    </h4>
+                    <p className="text-xs sm:text-sm text-gray-500 leading-relaxed max-w-xs mx-auto">
+                      {paso.descripcion}
+                    </p>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
 
-        <button
-          onClick={() => irAVista('tienda')}
-          className="bg-[#1c1b18] hover:bg-gray-800 text-white text-xs uppercase tracking-[0.18em] px-8 py-3.5 rounded-xs transition cursor-pointer"
-        >
-          Ver Catálogo en Tienda
-        </button>
+          <button
+            onClick={() => irAVista('tienda')}
+            className="w-full sm:w-auto bg-[#1c1b18] hover:bg-gray-800 text-white text-xs uppercase tracking-[0.2em] px-9 py-4 rounded-sm transition shadow-sm cursor-pointer"
+          >
+            Ver Catálogo en Tienda
+          </button>
+        </div>
       </div>
     </div>
   );

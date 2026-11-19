@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { notificar, confirmarAccion } from './Notificaciones';
 
 const CLAVE_PEDIDOS_STORAGE = 'pedidos_taller_costura_v1';
 const API_CLIENTES_URL = 'https://tienda-costura-backend.onrender.com/api/clientes';
@@ -127,7 +128,10 @@ export default function Seguimiento({ esAdmin, nombreTienda = 'Taller de Costura
     const telWhatsApp = formatearTelefonoWhatsApp(pedido.clienteTelefono);
 
     if (!telWhatsApp) {
-      alert('Este pedido no tiene un número de teléfono registrado para enviar WhatsApp.');
+      notificar(
+        'Este pedido no tiene un número de teléfono registrado para enviar WhatsApp.',
+        'aviso'
+      );
       return;
     }
 
@@ -167,17 +171,21 @@ export default function Seguimiento({ esAdmin, nombreTienda = 'Taller de Costura
   };
 
   // Cambiar rápidamente el estado desde la tabla del Admin
-  const cambiarEstadoRapido = (pedido, nuevoEstado) => {
+  const cambiarEstadoRapido = async (pedido, nuevoEstado) => {
     const actualizados = pedidos.map((p) =>
       p.id === pedido.id ? { ...p, estado: nuevoEstado } : p
     );
     setPedidos(actualizados);
+    notificar(`Estado de ${pedido.codigo} actualizado a "${nuevoEstado}".`);
 
-    // Si pasa a "Listo para retirar", enviamos la notificación por WhatsApp automáticamente
+    // Si pasa a "Listo para retirar", preguntamos con el modal propio de la página
     if (nuevoEstado === 'Listo para retirar') {
-      const confirmar = window.confirm(
-        `¡El pedido ${pedido.codigo} de ${pedido.clienteNombre} pasó a "Listo para retirar"!\n\n¿Deseas enviarle ahora mismo la notificación por WhatsApp al ${pedido.clienteTelefono}?`
-      );
+      const confirmar = await confirmarAccion({
+        titulo: '🟢 ¡Prenda Lista para Retirar!',
+        mensaje: `El pedido ${pedido.codigo} de ${pedido.clienteNombre} pasó a "Listo para retirar".\n\n¿Deseas enviarle ahora mismo la notificación por WhatsApp al ${pedido.clienteTelefono}?`,
+        textoConfirmar: '📲 Enviar WhatsApp',
+        textoCancelar: 'Más tarde',
+      });
       if (confirmar) {
         notificarClientePorWhatsApp({ ...pedido, estado: nuevoEstado }, 'Listo para retirar');
       }
@@ -245,9 +253,16 @@ export default function Seguimiento({ esAdmin, nombreTienda = 'Taller de Costura
     });
   };
 
-  const eliminarPedido = (id, codigo) => {
-    if (!window.confirm(`¿Eliminar la orden ${codigo}?`)) return;
+  const eliminarPedido = async (id, codigo) => {
+    const confirmado = await confirmarAccion({
+      titulo: 'Eliminar orden de trabajo',
+      mensaje: `¿Estás seguro de eliminar la orden ${codigo}?`,
+      textoConfirmar: 'Sí, eliminar',
+      peligro: true,
+    });
+    if (!confirmado) return;
     setPedidos(pedidos.filter((p) => p.id !== id));
+    notificar(`Orden ${codigo} eliminada.`);
   };
 
   // Filtrar pedidos para el buscador del cliente
@@ -267,16 +282,20 @@ export default function Seguimiento({ esAdmin, nombreTienda = 'Taller de Costura
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 font-sans">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 font-sans animate-fade-up">
       {/* Encabezado */}
       <div className="text-center mb-10">
-        <span className="text-xs uppercase tracking-[0.25em] text-[#b38f48] font-semibold">
+        <span className="text-[11px] uppercase tracking-[0.28em] text-[#b38f48] font-semibold">
           Consulta en Línea
         </span>
-        <h1 className="text-2xl sm:text-4xl font-light text-gray-800 mt-2 tracking-wide">
+        <h1 className="font-editorial text-4xl sm:text-5xl font-semibold text-gray-900 mt-1.5 tracking-wide">
           Seguimiento de tu Prenda o Pedido
         </h1>
-        <div className="w-16 h-0.5 bg-[#c8a45d] mx-auto mt-4 mb-4" />
+        <div className="flex items-center justify-center gap-3 mt-3 mb-4">
+          <span className="w-12 h-[1px] bg-[#c8a45d]" />
+          <span className="text-[#c8a45d] text-xs">◆</span>
+          <span className="w-12 h-[1px] bg-[#c8a45d]" />
+        </div>
         <p className="text-gray-600 max-w-xl mx-auto text-sm">
           Ingresa tu <b>número de teléfono</b>, tu <b>código de orden</b> (ej.{' '}
           <code>ORD-101</code>) o tu <b>nombre</b> para conocer el estado actual de tu prenda.

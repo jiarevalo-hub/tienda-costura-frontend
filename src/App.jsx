@@ -8,6 +8,10 @@ import Clientes from './components/Clientes';
 import Seguimiento from './components/Seguimiento';
 import AuthModal from './components/AuthModal';
 import AdminProductos from './components/AdminProductos';
+import ContenedorNotificaciones, {
+  notificar,
+  confirmarAccion,
+} from './components/Notificaciones';
 import {
   CLAVE_STORAGE_SITIO,
   CONFIG_POR_DEFECTO,
@@ -87,14 +91,18 @@ function App() {
     });
   };
 
-  const restaurarValoresOriginales = () => {
-    if (
-      window.confirm(
-        '¿Deseas restaurar todos los textos e imágenes de la página a sus valores originales?'
-      )
-    ) {
+  const restaurarValoresOriginales = async () => {
+    const confirmado = await confirmarAccion({
+      titulo: 'Restaurar diseño original',
+      mensaje:
+        '¿Deseas restaurar todos los textos e imágenes de la página a sus valores originales?',
+      textoConfirmar: 'Sí, restaurar',
+      peligro: true,
+    });
+    if (confirmado) {
       localStorage.removeItem(CLAVE_STORAGE_SITIO);
       setConfigSitio(CONFIG_POR_DEFECTO);
+      notificar('Se restauraron los valores originales de la página.');
     }
   };
 
@@ -107,8 +115,9 @@ function App() {
         ...configSitio.general,
         logoImagen: base64,
       });
+      notificar('Logo actualizado correctamente.');
     } catch (err) {
-      alert(err.message);
+      notificar(err.message, 'error');
     }
   };
 
@@ -151,6 +160,7 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#faf9f6] text-gray-800 overflow-x-hidden">
+      <ContenedorNotificaciones />
       {/* Barra superior exclusiva de Administrador (Adaptada para móvil y desktop) */}
       {esAdmin && (
         <div className="bg-[#1c1b18] text-white px-4 sm:px-6 py-2.5 border-b border-gray-800 z-50">
@@ -286,14 +296,14 @@ function App() {
       )}
 
       {/* Barra superior de navegación (Optimizada para celular y escritorio) */}
-      <header className="sticky top-0 z-40 bg-white shadow-xs border-b border-gray-100">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-xs border-b border-[#e8dfd1]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center gap-2">
           {/* Logo estilo monograma dorado o imagen subida */}
           <button
             onClick={() => irAVista('inicio')}
             className="flex items-center gap-2 sm:gap-3 group cursor-pointer focus:outline-none min-w-0"
           >
-            <div className="bg-[#f9f6f0] border border-[#e8dfd1] px-2.5 sm:px-4 py-1.5 sm:py-2 rounded flex items-center gap-2 sm:gap-2.5 shadow-2xs">
+            <div className="bg-[#faf6ed] border border-[#dfd2b8] group-hover:border-[#c8a45d] transition px-3 sm:px-4 py-1.5 sm:py-2 rounded-sm flex items-center gap-2 sm:gap-2.5 shadow-2xs">
               {general.logoImagen ? (
                 <img
                   src={general.logoImagen}
@@ -622,7 +632,7 @@ function App() {
         target="_blank"
         rel="noopener noreferrer"
         title="Escríbenos por WhatsApp"
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 bg-[#25D366] hover:bg-[#1ebe5d] text-white rounded-full shadow-lg flex items-center justify-center transition transform hover:scale-105"
+        className="animate-whatsapp fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 bg-[#25D366] hover:bg-[#1ebe5d] text-white rounded-full shadow-lg flex items-center justify-center transition transform hover:scale-110"
       >
         <svg className="w-6 h-6 sm:w-8 sm:h-8 fill-current" viewBox="0 0 32 32">
           <path d="M16.004 3.2c-7.07 0-12.8 5.73-12.8 12.8 0 2.257.59 4.46 1.71 6.404L3.2 28.8l6.564-1.693a12.74 12.74 0 0 0 6.24 1.627h.005c7.068 0 12.795-5.73 12.795-12.8 0-3.42-1.33-6.636-3.748-9.054A12.714 12.714 0 0 0 16.004 3.2zm0 23.386h-.004a10.6 10.6 0 0 1-5.405-1.48l-.388-.23-4.018 1.036 1.072-3.916-.252-.402a10.576 10.576 0 0 1-1.624-5.654c0-5.855 4.764-10.62 10.62-10.62 2.836 0 5.502 1.105 7.507 3.112a10.55 10.55 0 0 1 3.108 7.508c0 5.856-4.764 10.646-10.616 10.646zm5.826-7.96c-.318-.16-1.888-.932-2.18-1.038-.293-.107-.506-.16-.72.16-.212.32-.824 1.038-1.01 1.25-.186.214-.372.24-.69.08-.32-.16-1.348-.497-2.567-1.584-.949-.846-1.59-1.892-1.776-2.212-.186-.32-.02-.492.14-.65.144-.143.32-.373.48-.56.16-.186.212-.32.318-.532.107-.213.054-.4-.026-.56-.08-.16-.72-1.732-.985-2.372-.26-.622-.524-.538-.72-.548l-.612-.01c-.213 0-.559.08-.852.4-.292.32-1.118 1.092-1.118 2.664s1.145 3.09 1.305 3.303c.16.213 2.252 3.44 5.456 4.823.762.33 1.357.526 1.821.673.765.243 1.462.208 2.012.126.614-.092 1.888-.772 2.154-1.518.266-.746.266-1.385.186-1.518-.08-.133-.292-.213-.61-.373z" />

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider, facebookProvider } from '../firebase';
+import { notificar } from './Notificaciones';
 
 const API_URL = 'https://tienda-costura-backend.onrender.com/api/auth';
 const API_CLIENTES_URL = 'https://tienda-costura-backend.onrender.com/api/clientes';
@@ -29,9 +30,9 @@ export default function AuthModal({ alIniciarSesionExitoso, alCerrar }) {
                 localStorage.setItem('usuario', JSON.stringify(usuario));
 
                 if (usuario.rol === 'admin') {
-                    alert('¡Bienvenido, Administrador! Panel de productos desbloqueado.');
+                    notificar('¡Bienvenido, Administrador! Panel de gestión desbloqueado.');
                 } else {
-                    alert(`¡Bienvenido de nuevo, ${usuario.nombre}!`);
+                    notificar(`¡Bienvenido(a) de nuevo, ${usuario.nombre}!`);
                 }
 
                 if (alIniciarSesionExitoso) alIniciarSesionExitoso(usuario);
@@ -79,7 +80,9 @@ export default function AuthModal({ alIniciarSesionExitoso, alCerrar }) {
             localStorage.setItem('token', tokenFirebase);
             localStorage.setItem('usuario', JSON.stringify(usuarioVerificado));
 
-            alert(`¡Bienvenido(a), ${usuarioVerificado.nombre}! Tu correo (${usuarioVerificado.correo}) ha sido verificado con ${nombreProveedor}.`);
+            notificar(
+                `¡Bienvenido(a), ${usuarioVerificado.nombre}! Correo verificado con ${nombreProveedor}.`
+            );
 
             if (alIniciarSesionExitoso) alIniciarSesionExitoso(usuarioVerificado);
         } catch (err) {

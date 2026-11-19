@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { notificar, confirmarAccion } from './Notificaciones';
 
 const API_URL = 'https://tienda-costura-backend.onrender.com/api/productos';
 const NUMERO_WHATSAPP = '593997447443';
@@ -46,7 +47,13 @@ export default function Catalogo({ esAdmin, alSeleccionarParaEditar }) {
 
     // Eliminar un producto del catálogo (DELETE /api/productos/:id)
     const eliminarProductoAdmin = async (id, nombre) => {
-        if (!window.confirm(`¿Estás seguro de eliminar "${nombre}" del catálogo?`)) {
+        const confirmado = await confirmarAccion({
+            titulo: 'Eliminar del catálogo',
+            mensaje: `¿Estás seguro de eliminar "${nombre}" del catálogo de la tienda?`,
+            textoConfirmar: 'Sí, eliminar',
+            peligro: true,
+        });
+        if (!confirmado) {
             return;
         }
         const token = localStorage.getItem('token');
@@ -59,10 +66,12 @@ export default function Catalogo({ esAdmin, alSeleccionarParaEditar }) {
             if (productoVistaPrevia?.id === id) {
                 setProductoVistaPrevia(null);
             }
+            notificar(`"${nombre}" fue eliminado del catálogo.`);
         } catch (err) {
-            alert(
+            notificar(
                 err.response?.data?.error ||
-                    'No se pudo eliminar el producto. Verifica tu sesión de administrador.'
+                    'No se pudo eliminar el producto. Verifica tu sesión de administrador.',
+                'error'
             );
         }
     };
@@ -168,16 +177,20 @@ export default function Catalogo({ esAdmin, alSeleccionarParaEditar }) {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 font-sans">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 font-sans animate-fade-up">
             {/* Encabezado de sección */}
-            <div className="text-center mb-8 sm:mb-10">
-                <span className="text-xs uppercase tracking-[0.25em] text-[#b38f48] font-semibold">
+            <div className="text-center mb-8 sm:mb-12">
+                <span className="text-[11px] uppercase tracking-[0.28em] text-[#b38f48] font-semibold">
                     Tienda &amp; Catálogo
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-light text-gray-800 mt-2 tracking-wide">
+                <h2 className="font-editorial text-4xl sm:text-5xl font-semibold text-gray-900 mt-1.5 tracking-wide">
                     Nuestros Productos y Servicios
                 </h2>
-                <div className="w-16 h-0.5 bg-[#c8a45d] mx-auto mt-4" />
+                <div className="flex items-center justify-center gap-3 mt-3">
+                    <span className="w-12 h-[1px] bg-[#c8a45d]" />
+                    <span className="text-[#c8a45d] text-xs">◆</span>
+                    <span className="w-12 h-[1px] bg-[#c8a45d]" />
+                </div>
             </div>
 
             {/* Barra de búsqueda y Filtros por categoría */}
@@ -250,7 +263,7 @@ export default function Catalogo({ esAdmin, alSeleccionarParaEditar }) {
                             {productosFiltrados.map((producto) => (
                                 <div
                                     key={producto.id}
-                                    className="bg-white rounded-sm shadow-2xs hover:shadow-md transition overflow-hidden border border-gray-200 flex flex-col group"
+                                    className="card-atelier overflow-hidden flex flex-col group"
                                 >
                                     {/* Contenedor de imagen completa */}
                                     <div
@@ -284,7 +297,7 @@ export default function Catalogo({ esAdmin, alSeleccionarParaEditar }) {
                                             </div>
                                             <h3
                                                 onClick={() => abrirVistaPrevia(producto)}
-                                                className="text-lg font-medium text-gray-800 mt-2.5 hover:text-[#c8a45d] transition cursor-pointer"
+                                                className="font-editorial text-2xl font-semibold text-gray-900 mt-2.5 hover:text-[#c8a45d] transition cursor-pointer"
                                             >
                                                 {producto.nombre}
                                             </h3>
@@ -293,22 +306,22 @@ export default function Catalogo({ esAdmin, alSeleccionarParaEditar }) {
                                             </p>
                                         </div>
 
-                                        <div className="mt-6 pt-4 border-t border-gray-100">
+                                        <div className="mt-6 pt-4 border-t border-[#efe8da]">
                                             <div className="flex items-center justify-between gap-2">
-                                                <span className="text-lg font-semibold text-gray-900">
+                                                <span className="font-editorial text-2xl font-bold text-gray-900">
                                                     ${Number(producto.precio).toFixed(2)}
                                                 </span>
                                                 <div className="flex items-center gap-2">
                                                     <button
                                                         onClick={() => abrirVistaPrevia(producto)}
-                                                        className="border border-gray-300 hover:border-[#c8a45d] text-gray-700 hover:text-[#a37f38] px-3 py-2 rounded-xs transition text-xs uppercase tracking-wider cursor-pointer"
+                                                        className="border border-[#dfd4be] hover:border-[#c8a45d] text-gray-700 hover:text-[#a37f38] px-3 py-2 rounded-sm transition text-xs uppercase tracking-wider cursor-pointer"
                                                         title="Ver vista previa completa"
                                                     >
                                                         Vista Previa
                                                     </button>
                                                     <button
                                                         onClick={() => agregarAlCarrito(producto, 1)}
-                                                        className="bg-[#c8a45d] hover:bg-[#b59049] text-white px-4 py-2 rounded-xs transition text-xs uppercase tracking-[0.14em] font-medium cursor-pointer"
+                                                        className="btn-gold px-4 py-2 rounded-sm text-xs uppercase tracking-[0.14em] font-semibold cursor-pointer"
                                                     >
                                                         Agregar
                                                     </button>

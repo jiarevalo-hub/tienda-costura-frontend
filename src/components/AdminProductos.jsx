@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { notificar } from './Notificaciones';
 
 const API_URL = 'https://tienda-costura-backend.onrender.com/api/productos';
 
@@ -42,7 +43,10 @@ export default function AdminProductos({
         if (!archivo) return;
 
         if (!archivo.type.startsWith('image/')) {
-            alert('Por favor selecciona un archivo de imagen válido (JPG, PNG, WEBP).');
+            notificar(
+                'Por favor selecciona un archivo de imagen válido (JPG, PNG, WEBP).',
+                'error'
+            );
             return;
         }
 
@@ -101,18 +105,21 @@ export default function AdminProductos({
                     config
                 );
                 setMensaje('¡Producto actualizado con éxito!');
+                notificar('¡Producto actualizado con éxito en el catálogo!');
                 if (alCancelarEdicion) alCancelarEdicion();
             } else {
                 await axios.post(API_URL, producto, config);
                 setMensaje('¡Producto agregado al catálogo con éxito!');
+                notificar('¡Nuevo producto publicado en el catálogo!');
                 setProducto(ESTADO_INICIAL);
             }
 
             if (alGuardarProducto) alGuardarProducto();
         } catch (err) {
-            alert(
+            notificar(
                 err.response?.data?.error ||
-                    'Error al guardar el producto. Si subiste una imagen desde tu dispositivo, verifica que la columna imagen_url en tu base de datos sea de tipo TEXT.'
+                    'Error al guardar el producto. Verifica tu sesión de administrador.',
+                'error'
             );
         } finally {
             setGuardando(false);
