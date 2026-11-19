@@ -5,6 +5,7 @@ import Contacto from './components/Contacto';
 import SobreNosotros from './components/SobreNosotros';
 import Catalogo from './components/Catalogo';
 import Clientes from './components/Clientes';
+import Seguimiento from './components/Seguimiento';
 import AuthModal from './components/AuthModal';
 import AdminProductos from './components/AdminProductos';
 import {
@@ -15,15 +16,27 @@ import {
 } from './configSitio';
 
 const ITEMS_MENU_BASE = [
-  { id: 'inicio', label: 'Inicio', icono: '🏠' },
-  { id: 'servicios', label: 'Servicios', icono: '✂️' },
-  { id: 'contacto', label: 'Contacto', icono: '📍' },
-  { id: 'nosotros', label: 'Sobre Nosotros', icono: '✨' },
-  { id: 'tienda', label: 'Tienda', icono: '🛍️' },
+  { id: 'inicio', ruta: '/inicio', label: 'Inicio', icono: '🏠' },
+  { id: 'servicios', ruta: '/servicios', label: 'Servicios', icono: '✂️' },
+  { id: 'seguimiento', ruta: '/seguimiento', label: 'Seguimiento', icono: '📦' },
+  { id: 'contacto', ruta: '/contacto', label: 'Contacto', icono: '📍' },
+  { id: 'nosotros', ruta: '/nosotros', label: 'Sobre Nosotros', icono: '✨' },
+  { id: 'tienda', ruta: '/tienda', label: 'Tienda', icono: '🛍️' },
 ];
 
+function obtenerVistaDesdeUrl() {
+  const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+  if (path === '/servicios') return 'servicios';
+  if (path === '/seguimiento' || path === '/pedidos') return 'seguimiento';
+  if (path === '/contacto') return 'contacto';
+  if (path === '/nosotros' || path === '/sobre-nosotros') return 'nosotros';
+  if (path === '/tienda' || path === '/catalogo') return 'tienda';
+  if (path === '/clientes' || path === '/usuarios') return 'clientes';
+  return 'inicio';
+}
+
 function App() {
-  const [vistaActual, setVistaActual] = useState('inicio');
+  const [vistaActual, setVistaActual] = useState(() => obtenerVistaDesdeUrl());
   const [usuario, setUsuario] = useState(null);
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [recargarCatalogo, setRecargarCatalogo] = useState(0);
@@ -42,6 +55,20 @@ function App() {
         console.error('Error al leer usuario guardado:', e);
       }
     }
+
+    // Si entra a la raíz "/", reflejamos "/inicio" en la barra de direcciones
+    if (window.location.pathname === '/' || window.location.pathname === '') {
+      window.history.replaceState({ vista: 'inicio' }, '', '/inicio');
+    }
+
+    // Escuchar botones Atrás / Adelante del navegador
+    const manejarPopState = () => {
+      setVistaActual(obtenerVistaDesdeUrl());
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.addEventListener('popstate', manejarPopState);
+    return () => window.removeEventListener('popstate', manejarPopState);
   }, []);
 
   const guardarConfigSitio = (nuevaConfig) => {
@@ -90,13 +117,22 @@ function App() {
   const itemsMenu = esAdmin
     ? [
         ...ITEMS_MENU_BASE,
-        { id: 'clientes', label: 'Clientes / Usuarios', icono: '👥' },
+        {
+          id: 'clientes',
+          ruta: '/clientes',
+          label: 'Clientes / Usuarios',
+          icono: '👥',
+        },
       ]
     : ITEMS_MENU_BASE;
 
   const irAVista = (nuevaVista) => {
     setVistaActual(nuevaVista);
     setMenuMovilAbierto(false);
+    const nuevaRuta = `/${nuevaVista}`;
+    if (window.location.pathname !== nuevaRuta) {
+      window.history.pushState({ vista: nuevaVista }, '', nuevaRuta);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -107,7 +143,7 @@ function App() {
     setProductoEditando(null);
     setModoEdicion(false);
     if (vistaActual === 'clientes') {
-      setVistaActual('inicio');
+      irAVista('inicio');
     }
   };
 
@@ -435,6 +471,14 @@ function App() {
             whatsapp={general.whatsapp}
             modoEdicion={esAdmin && modoEdicion}
             actualizarSeccion={actualizarSeccion}
+          />
+        )}
+
+        {vistaActual === 'seguimiento' && (
+          <Seguimiento
+            esAdmin={esAdmin}
+            nombreTienda={general.nombreTienda}
+            whatsappTaller={general.whatsapp}
           />
         )}
 
